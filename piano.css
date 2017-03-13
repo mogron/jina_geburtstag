@@ -92,3 +92,15 @@ audio {
   left: -10px;
   background-color: black;
 }
+
+img {
+  height: 400px;
+}
+
+.released {
+  height: 400px;
+}
+
+.not-played {
+  height: 0px;
+}

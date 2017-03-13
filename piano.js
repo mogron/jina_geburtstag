@@ -59,6 +59,15 @@
     return it;
   };
 
+  function imageId(id) {
+    return '#image-' + id;
+  };
+
+  function getImage(id) {
+    var it = $(imageId(id));
+    return it;
+  };
+
   /* Virtual piano keyboard events. */
   
   function keyup(code) {
@@ -79,6 +88,10 @@
     if (depressed[key]) {
       return;
     }
+    var image = getImage(key);
+    image.removeClass('not-played')
+    image.removeClass('released')
+    image.insertAfter($('#img-top'))
     clearInterval(intervals[key]);
     if (audio) {
       audio.pause();
@@ -147,21 +160,24 @@
   
   var sustaining = false;
 
+  function release(key) {
+    var image = getImage(key);
+    image.addClass('released');
+    depressed[key] = false;
+    if (!sustaining) {
+      fade(key)();
+    }
+  }
+
   /* Register mouse event callbacks. */
   
   keys.forEach(function(key) {
     $(pianoClass(key)).mousedown(function() {
-      $(pianoClass(key)).animate({
-        'backgroundColor': '#88FFAA'
-      }, 0);
       press(key);
     });
     if (fadeout) {
       $(pianoClass(key)).mouseup(function() {
-        depressed[key] = false;
-        if (!sustaining) {
-          fade(key)();
-        }
+        release(key)
       });
     } else {
       $(pianoClass(key)).mouseup(function() {
@@ -198,15 +214,31 @@
       });
     }
     if (keyup(event.which)) {
-      depressed[keyup(event.which)] = false;
-      if (!sustaining) {
-        if (fadeout) {
-          fade(keyup(event.which))();
-        } else {
-          kill(keyup(event.which))();
-        }
-      }
+      release(keyup(event.which))
     }
   });
 
+  var happyBirthday = ['C3', 'C3', 'D3', 'C3', 'F3', 'E3',
+  'C3', 'C3', 'D3', 'C3', 'G3', 'F3',
+  'C3', 'C3', 'C4', 'A3', 'F3',
+  'E3', 'D3', 'Bb3', 'Bb3', 'A3', 'F3', 'G3', 'F3']
+  var hbLengths = [3, 1, 4, 4, 4, 8,
+  3, 1, 4, 4, 4, 8,
+  3, 1, 4, 4, 4,
+  4, 4, 3, 1, 4, 4, 4, 8]
+  var baseLength = 125
+
+  function playHappyBirthday(index) {
+    if (index > 0) {
+      release(happyBirthday[index - 1]);
+    }
+    if (index >= happyBirthday.length) {
+      return;
+    }
+    press(happyBirthday[index])
+    setTimeout(function() {playHappyBirthday(index + 1)}, hbLengths[index] * baseLength)
+  }
+
+  console.log($('#play-hb'))
+  $('#play-hb')[0].addEventListener('click', function() {playHappyBirthday(0)})
 })();
